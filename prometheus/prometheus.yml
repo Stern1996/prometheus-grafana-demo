@@ -1,0 +1,31 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+  external_labels:
+    environment: demo
+    region: local
+
+rule_files:
+  - alert-rules.yml
+
+# No Alertmanager in this demo: firing alerts are still visible in the
+# Prometheus UI (/alerts) and in Grafana, which is what we want to show.
+alerting:
+  alertmanagers: []
+
+scrape_configs:
+  - job_name: checkout-api
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['127.0.0.1:8080']
+        labels:
+          service: checkout-api
+          team: platform
+          env: demo
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ['127.0.0.1:9090']
+        labels:
+          service: prometheus
+          env: demo

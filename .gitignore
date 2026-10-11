@@ -1,0 +1,31 @@
+# ---------------------------------------------------------------------------
+# Downloaded binaries (~550 MB: Prometheus + Grafana)
+# The README explains how to fetch them again.
+# ---------------------------------------------------------------------------
+bin/
+_dl/
+
+# ---------------------------------------------------------------------------
+# Runtime state -- never commit these
+#   data/prometheus     time-series database
+#   data/grafana        Grafana database, provisioned state
+#   data/tmp            scratch space used while installing Grafana plugins
+# ---------------------------------------------------------------------------
+data/
+
+# Logs from start.ps1
+logs/
+
+# PIDs recorded by start.ps1
+run/
+
+# ---------------------------------------------------------------------------
+# Editor / OS noise
+# ---------------------------------------------------------------------------
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+*.tmp
+.vscode/
+.idea/

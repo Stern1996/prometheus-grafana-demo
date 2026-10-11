@@ -1,0 +1,96 @@
+groups:
+  - name: checkout-api.availability
+    interval: 5s
+    rules:
+      - alert: ServiceDown
+        expr: up{job="checkout-api"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "checkout-api is not responding to scrapes"
+          description: "Prometheus has failed to scrape {{ $labels.instance }} for over 30s."
+          action: "Check the process, then the host, then the network path."
+
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(demo_http_requests_total{status=~"5.."}[2m]))
+          /
+          sum(rate(demo_http_requests_total[2m])) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "5xx error rate above 5%"
+          description: "Current 5xx ratio is {{ $value | humanizePercentage }}."
+          action: "Check upstream dependencies and recent deploys."
+
+      - alert: ElevatedErrorRate
+        expr: |
+          sum(rate(demo_http_requests_total{status=~"5.."}[2m]))
+          /
+          sum(rate(demo_http_requests_total[2m])) > 0.02
+        for: 2m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "5xx error rate above 2%"
+          description: "Current 5xx ratio is {{ $value | humanizePercentage }}."
+
+  - name: checkout-api.latency
+    interval: 5s
+    rules:
+      - alert: HighLatencyP95
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum(rate(demo_http_request_duration_seconds_bucket[2m])) by (le)
+          ) > 0.5
+        for: 1m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "p95 latency above 500ms"
+          description: "p95 is {{ $value | humanizeDuration }}."
+          action: "Look for a slow dependency or an under-provisioned worker pool."
+
+      - alert: SlowEndpoint
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum(rate(demo_http_request_duration_seconds_bucket[2m])) by (le, endpoint)
+          ) > 2
+        for: 1m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Endpoint {{ $labels.endpoint }} p95 above 2s"
+          description: "p95 for {{ $labels.endpoint }} is {{ $value | humanizeDuration }}."
+
+  - name: checkout-api.saturation
+    interval: 5s
+    rules:
+      - alert: QueueBacklog
+        expr: demo_queue_depth > 30
+        for: 2m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Request queue is backing up"
+          description: "Queue depth has been above 30 for 2 minutes (now {{ $value }})."
+
+      - alert: LowCacheHitRatio
+        expr: demo_cache_hit_ratio < 0.9
+        for: 2m
+        labels:
+          severity: info
+          team: platform
+        annotations:
+          summary: "Cache hit ratio has dropped"
+          description: "Hit ratio is {{ $value | humanizePercentage }}."

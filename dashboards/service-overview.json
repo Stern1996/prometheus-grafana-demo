@@ -1,0 +1,821 @@
+{
+  "uid": "service-overview",
+  "title": "checkout-api — Service Overview",
+  "description": "Request rate, errors and duration (RED) plus saturation signals for checkout-api.",
+  "tags": [
+    "demo",
+    "prometheus",
+    "grafana",
+    "sre"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "5s",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**checkout-api** &nbsp;·&nbsp; service overview &nbsp;·&nbsp; RED method (rate, errors, duration) + saturation signals &nbsp;·&nbsp; scraped every 5s by Prometheus, `env=demo`",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        }
+      },
+      "transparent": true,
+      "targets": []
+    },
+    {
+      "type": "stat",
+      "title": "Requests / sec",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-ds"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 2
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(demo_http_requests_total[1m]))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-ds"
+          },
+          "legendFormat": "req/s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 1,
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "value",
+        "justifyMode": "auto",
+        "orientation": "auto"
+      },
+      "description": "Total request rate across all endpoints, 1 minute window."
+    },
+    {
+      "type": "stat",
+      "title": "Error rate",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-ds"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 2
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * sum(rate(demo_http_requests_total{status=~\"5..\"}[1m])) / clamp_min(sum(rate(demo_http_requests_total[1m])), 0.0001)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-ds"
+          },
+          "legendFormat": "5xx"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 2,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "value",
+        "justifyMode": "auto",
+        "orientation": "auto"
+      },
+      "description": "Share of 5xx responses. Alerting fires at 2% (warning) and 5% (critical)."
+    },
+    {
+      "type": "stat",
+      "title": "p95 latency",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-ds"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 2
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum(rate(demo_http_request_duration_seconds_bucket[1m])) by (le))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-ds"
+          },
+          "legendFormat": "p95"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "value",
+        "justifyMode": "auto",
+        "orientation": "auto"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Active DB connections",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-ds"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 2
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "demo_db_connections_active",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-ds"
+          },
+          "legendFormat": "connections"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 1,
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "value",
+        "justifyMode": "auto",
+        "orientation": "auto"
+      }
+    },
+    {
+      "type": "gauge",
+      "title": "Worker utilisation",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-ds"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 2
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "demo_worker_utilization",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-ds"
+          },
+          "legendFormat": "utilisation"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "decimals": 1,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.7
+              },
+              {
+                "color": "red",
+                "value": 0.9
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      }
+    },
+    {
+      "type": "gauge",
+      "title": "Cache hit ratio",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-ds"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 2
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "demo_cache_hit_ratio",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-ds"
+          },
+          "legendFormat": "hit ratio"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "decimals": 1,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.9
+              },
+              {
+                "color": "green",
+                "value": 0.95
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Request rate by endpoint",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-ds"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (endpoint) (rate(demo_http_requests_total[1m]))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-ds"
+          },
+          "legendFormat": "{{endpoint}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 2,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 14,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisSoftMin": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "description": "Where the traffic actually goes. Stacked so the total is readable."
+    },
+    {
+      "type": "timeseries",
+      "title": "Latency percentiles",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-ds"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum(rate(demo_http_request_duration_seconds_bucket[1m])) by (le))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-ds"
+          },
+          "legendFormat": "p50"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum(rate(demo_http_request_duration_seconds_bucket[1m])) by (le))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-ds"
+          },
+          "legendFormat": "p95"
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.99, sum(rate(demo_http_request_duration_seconds_bucket[1m])) by (le))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-ds"
+          },
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisSoftMin": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.5
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "description": "p50/p95/p99 over a 1 minute window."
+    },
+    {
+      "type": "timeseries",
+      "title": "Errors by response class",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-ds"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (status) (rate(demo_http_requests_total{status=~\"[45]..\"}[1m]))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-ds"
+          },
+          "legendFormat": "HTTP {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 2,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 25,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisSoftMin": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "description": "4xx and 5xx response rates, split by status code."
+    },
+    {
+      "type": "timeseries",
+      "title": "Saturation: queue depth & worker utilisation",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-ds"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "demo_queue_depth",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-ds"
+          },
+          "legendFormat": "queue depth"
+        },
+        {
+          "refId": "B",
+          "expr": "100 * demo_worker_utilization",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-ds"
+          },
+          "legendFormat": "worker utilisation %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 1,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 14,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisSoftMin": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "description": "Leading indicators: the queue backs up before latency visibly degrades."
+    },
+    {
+      "type": "piechart",
+      "title": "Response status distribution",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-ds"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 0,
+        "y": 22
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (status) (increase(demo_http_requests_total[30m]))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-ds"
+          },
+          "legendFormat": "{{status}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "pieType": "donut",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        }
+      },
+      "description": "Cumulative response mix over the selected 30 minute window."
+    },
+    {
+      "type": "bargauge",
+      "title": "Throughput by endpoint",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-ds"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 14,
+        "x": 10,
+        "y": 22
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (endpoint) (rate(demo_http_requests_total[5m]))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus-ds"
+          },
+          "legendFormat": "{{endpoint}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 2,
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "showUnfilled": true
+      },
+      "description": "Current request rate per endpoint."
+    }
+  ]
+}
